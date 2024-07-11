@@ -17,7 +17,7 @@ public class FileUploadController {
     public ResponseEntity<String> uploadFile(@RequestParam("inputfile") MultipartFile inputFile,
                                              @RequestParam("referencefile") MultipartFile referenceFile) {
         try {
-            fileProcessingService.processFile(inputFile, referenceFile);
+            fileProcessingService.saveFile(inputFile, referenceFile);
             return ResponseEntity.ok("File uploaded and processed successfully");
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Failed to process file: " + e.getMessage());

@@ -48,7 +48,7 @@
     <label for="referencefile">Insert Reference File (CSV file):</label>
     <input type="file" id="referencefile" name="referencefile" accept=".csv"><br><br>
 
-    <button type="submit">Save Data</button>
+    <button type="submit">Generate Report</button>
 </form>
 </body>
 </html>

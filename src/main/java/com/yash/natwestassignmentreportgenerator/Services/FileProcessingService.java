@@ -1,6 +1,7 @@
 package com.yash.natwestassignmentreportgenerator.Services;
 
 import com.yash.natwestassignmentreportgenerator.Models.InputData;
+import com.yash.natwestassignmentreportgenerator.Models.OutputData;
 import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
 import com.yash.natwestassignmentreportgenerator.Repositories.InputDataRepository;
 import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepository;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -28,18 +30,22 @@ public class FileProcessingService {
     @Autowired
     private ReferenceDataRepository referenceDataRepository;
 
+    @Autowired
+    RestTemplate template;
+
     @Transactional
-    public void processFile(MultipartFile inputFile, MultipartFile referenceFile) throws Exception {
+    public List<OutputData> saveFile(MultipartFile inputFile, MultipartFile referenceFile) throws Exception {
         List<InputData> inputDataList = new ArrayList<>();
         List<ReferenceData> referenceDataList = new ArrayList<>();
         System.out.println(inputFile);
         System.out.println(referenceFile);
 
-        try (BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputFile.getInputStream(), StandardCharsets.UTF_8));
-             BufferedReader referenceReader = new BufferedReader(new InputStreamReader(referenceFile.getInputStream(), StandardCharsets.UTF_8))) {
-
+        try {
+            BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputFile.getInputStream(), StandardCharsets.UTF_8));
+            BufferedReader referenceReader = new BufferedReader(new InputStreamReader(referenceFile.getInputStream(), StandardCharsets.UTF_8));
             processInputCsvFile(inputReader, inputDataList);
             processReferenceCsvFile(referenceReader, referenceDataList);
+
         } catch (Exception e) {
             throw new Exception("Failed to process CSV files: " + e.getMessage());
         }
@@ -47,6 +53,12 @@ public class FileProcessingService {
         try {
             inputDataRepository.saveAll(inputDataList);
             referenceDataRepository.saveAll(referenceDataList);
+            List<OutputData> outputDataList = template.getForObject("/api/reports/generate", OutputData.class).getItems();
+            if(outputDataList.size() > 0) {
+                return outputDataList;
+            }
+            return null;
+
         } catch (DataAccessException e) {
             throw new Exception("Failed to save data to repositories: " + e.getMessage());
         }
