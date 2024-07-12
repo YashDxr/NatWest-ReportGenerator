@@ -5,7 +5,6 @@ import com.yash.natwestassignmentreportgenerator.Models.OutputData;
 import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
 import com.yash.natwestassignmentreportgenerator.Models.ReportData;
 import com.yash.natwestassignmentreportgenerator.Repositories.InputDataRepository;
-import com.yash.natwestassignmentreportgenerator.Repositories.OutputDataRepository;
 import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -33,8 +32,6 @@ public class FileProcessingService {
     @Autowired
     private ReferenceDataRepository referenceDataRepository;
 
-    @Autowired
-    private OutputDataRepository outputDataRepository;
 
     @Autowired
     ModelMapper mapper;

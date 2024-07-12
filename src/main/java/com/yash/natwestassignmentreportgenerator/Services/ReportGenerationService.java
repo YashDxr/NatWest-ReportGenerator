@@ -8,8 +8,10 @@ import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepos
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
 public class ReportGenerationService {
@@ -22,27 +24,43 @@ public class ReportGenerationService {
 
 
     public List<ReportData> generateReport() {
+
         List<InputData> inputDataList = inputDataRepository.findAll();
-        List<ReportData> reportDataList = new ArrayList<>();
+        System.out.println(inputDataList);
 
-        for (InputData inputData : inputDataList) {
-            ReferenceData referenceData = referenceDataRepository.findByRefkey1(inputData.getRefkey1());
-            if (referenceData == null) {
-                return new ArrayList<>();
-            }
-            ReportData report = new ReportData();
+        List<String> refkeys = inputDataList.stream()
+                .map(InputData::getRefkey1)
+                .distinct()
+                .collect(Collectors.toList());
 
-            report.setOutfield1(inputData.getField1() + inputData.getField2());
-            report.setOutfield2(referenceData.getRefdata1());
-            report.setOutfield3(referenceData.getRefdata2() + referenceData.getRefdata3());
-            report.setOutfield4(inputData.getField3() + Math.max(inputData.getField5(), referenceData.getRefdata4()));
-            report.setOutfield5(Math.max(inputData.getField5(), referenceData.getRefdata4()));
+        List<ReferenceData> referenceDataList = referenceDataRepository.findByRefkey1In(refkeys);
+        Map<String, ReferenceData> referenceDataMap = referenceDataList.stream()
+                .collect(Collectors.toConcurrentMap(ReferenceData::getRefkey1, referenceData -> referenceData));
 
-            reportDataList.add(report);
-        }
+        List<ReportData> reportDataList = inputDataList.parallelStream()
+                .map(inputData -> {
+                    ReferenceData referenceData = referenceDataMap.get(inputData.getRefkey1());
+                    if (referenceData == null) {
+                        return null;
+                    }
+
+                    ReportData report = new ReportData();
+                    report.setOutfield1(inputData.getField1() + inputData.getField2());
+                    report.setOutfield2(referenceData.getRefdata1());
+                    report.setOutfield3(referenceData.getRefdata2() + referenceData.getRefdata3());
+                    report.setOutfield4(inputData.getField3() + Math.max(inputData.getField5(), referenceData.getRefdata4()));
+                    report.setOutfield5(Math.max(inputData.getField5(), referenceData.getRefdata4()));
+
+                    return report;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
 
         return reportDataList;
     }
+
+
+
     public List<InputData> findInputRecords() {
         return inputDataRepository.findAll();
     }
