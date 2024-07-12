@@ -1,10 +1,13 @@
 package com.yash.natwestassignmentreportgenerator.Services;
 
+import com.yash.natwestassignmentreportgenerator.Controllers.FileUploadController;
 import com.yash.natwestassignmentreportgenerator.Models.InputData;
 import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
 import com.yash.natwestassignmentreportgenerator.Models.ReportData;
 import com.yash.natwestassignmentreportgenerator.Repositories.InputDataRepository;
 import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +20,8 @@ import java.util.stream.Collectors;
 @Service
 public class ReportGenerationService {
 
+    private static final Logger logger = LoggerFactory.getLogger(ReportGenerationService.class);
+
     @Autowired
     private InputDataRepository inputDataRepository;
 
@@ -25,7 +30,7 @@ public class ReportGenerationService {
 
 
     public List<ReportData> generateReport() {
-
+        logger.info("Generating report");
         List<InputData> inputDataList = inputDataRepository.findAll();
         System.out.println(inputDataList);
 
@@ -42,6 +47,7 @@ public class ReportGenerationService {
         List<ReferenceData> referenceDataList = referenceDataRepository.findByRefkey1InOrRefkey2In(refkey1List, refkey2List);
         Map<String, ReferenceData> referenceDataMap = new ConcurrentHashMap<>();
 
+        logger.info("Generating reference data");
         for (ReferenceData referenceData : referenceDataList) {
             referenceDataMap.put(referenceData.getRefkey1() + "|" + referenceData.getRefkey2(), referenceData);
         }
@@ -69,10 +75,12 @@ public class ReportGenerationService {
     }
 
     public List<InputData> findInputRecords() {
+        logger.info("Finding input records");
         return inputDataRepository.findAll();
     }
 
     public List<ReferenceData> findReferenceRecords() {
+        logger.info("Finding reference records");
         return referenceDataRepository.findAll();
     }
 

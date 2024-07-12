@@ -1,5 +1,6 @@
 package com.yash.natwestassignmentreportgenerator.Services;
 
+import com.yash.natwestassignmentreportgenerator.Controllers.FileUploadController;
 import com.yash.natwestassignmentreportgenerator.Models.InputData;
 import com.yash.natwestassignmentreportgenerator.Models.OutputData;
 import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
@@ -11,6 +12,8 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
@@ -21,11 +24,12 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service
 public class FileProcessingService {
+
+    private static final Logger logger = LoggerFactory.getLogger(FileProcessingService.class);
 
     @Autowired
     private InputDataRepository inputDataRepository;
@@ -44,27 +48,33 @@ public class FileProcessingService {
 
     @Transactional
     public List<ReportData> saveFile(MultipartFile inputFile, MultipartFile referenceFile) throws Exception {
+        logger.info("Processing input file");
         List<InputData> inputDataList = new ArrayList<>();
         List<ReferenceData> referenceDataList = new ArrayList<>();
 
 
         try {
+            logger.info("Processing CSV files");
             BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputFile.getInputStream(), StandardCharsets.UTF_8));
             BufferedReader referenceReader = new BufferedReader(new InputStreamReader(referenceFile.getInputStream(), StandardCharsets.UTF_8));
             processInputCsvFile(inputReader, inputDataList);
             processReferenceCsvFile(referenceReader, referenceDataList);
 
         } catch (Exception e) {
+            logger.error("Error while processing file");
             throw new Exception("Failed to process CSV files: " + e.getMessage());
         }
 
         try {
+            logger.info("Saving file data to repository");
             inputDataRepository.saveAll(inputDataList);
             referenceDataRepository.saveAll(referenceDataList);
         } catch (DataAccessException e) {
+            logger.error("Error while saving data");
             throw new Exception("Failed to save data to repositories: " + e.getMessage());
         }
         try{
+            logger.info("Generating report Data...");
             List<ReportData> reportDataList = reportGenerationService.generateReport();
 
             if(!reportDataList.isEmpty()) {
@@ -72,11 +82,13 @@ public class FileProcessingService {
             }
             return null;
         } catch (Exception e){
-            throw new Exception("Failed to save data to repositories: " + e.getMessage());
+            logger.error("Error while generating report");
+            throw new Exception("Failed generate report: " + e.getMessage());
         }
     }
 
     private void processInputCsvFile(BufferedReader reader, List<InputData> dataList) throws Exception {
+        logger.info("Processing Input CSV file");
         CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
         for (CSVRecord csvRecord : csvParser) {
             try {
@@ -101,6 +113,7 @@ public class FileProcessingService {
     }
 
     private void processReferenceCsvFile(BufferedReader reader, List<ReferenceData> dataList) throws Exception {
+        logger.info("Processing Reference CSV file");
         CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT.withFirstRecordAsHeader());
         for (CSVRecord csvRecord : csvParser) {
             try {
@@ -122,11 +135,13 @@ public class FileProcessingService {
     }
 
     public List<ReportData> generateExistingDataReport() {
+        logger.info("Generating report Data...");
         List<ReportData> reportDataList = reportGenerationService.generateReport();
         return reportDataList;
     }
 
     public List<ReportData> getDataReport() {
+        logger.info("Getting Report Data...");
         List<OutputData> outputData = outputDataRepository.findAll();
         List<ReportData> reportDataList = new ArrayList<>();
 

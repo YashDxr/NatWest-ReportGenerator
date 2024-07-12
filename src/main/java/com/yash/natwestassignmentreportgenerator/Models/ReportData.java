@@ -11,4 +11,5 @@ public class ReportData {
     private String outfield3;
     private String outfield4;
     private Double outfield5;
+
 }
