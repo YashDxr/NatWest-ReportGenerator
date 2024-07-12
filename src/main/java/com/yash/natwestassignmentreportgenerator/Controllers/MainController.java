@@ -23,7 +23,7 @@ public class MainController {
 
     @RequestMapping("/report")
     public String getReport(Model model) {
-        List<ReportData> reportDataList = schedulingService.getLastGeneratedReport();
+        List<ReportData> reportDataList = schedulingService.findLastGeneratedReport();
         model.addAttribute("reportDataList", reportDataList);
         return "Report";
     }

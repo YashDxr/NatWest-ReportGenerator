@@ -55,6 +55,12 @@
     <input type="datetime-local" name="datetime"><br><br>
     <button type="submit">Generate Report</button>
 </form>
+<form action="/api/files/generatereport">
+    <button type="submit">Create Report from Existing Input & Reference Table</button>
+</form>
+<form action="/api/files/getreport">
+    <button type="submit">Generate Report from Output Table (Already Generated Reports)</button>
+</form>
 
 </body>
 </html>

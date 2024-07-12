@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,18 +29,26 @@ public class ReportGenerationService {
         List<InputData> inputDataList = inputDataRepository.findAll();
         System.out.println(inputDataList);
 
-        List<String> refkeys = inputDataList.stream()
+        List<String> refkey1List = inputDataList.stream()
                 .map(InputData::getRefkey1)
                 .distinct()
                 .collect(Collectors.toList());
 
-        List<ReferenceData> referenceDataList = referenceDataRepository.findByRefkey1In(refkeys);
-        Map<String, ReferenceData> referenceDataMap = referenceDataList.stream()
-                .collect(Collectors.toConcurrentMap(ReferenceData::getRefkey1, referenceData -> referenceData));
+        List<String> refkey2List = inputDataList.stream()
+                .map(InputData::getRefkey2)
+                .distinct()
+                .collect(Collectors.toList());
+
+        List<ReferenceData> referenceDataList = referenceDataRepository.findByRefkey1InOrRefkey2In(refkey1List, refkey2List);
+        Map<String, ReferenceData> referenceDataMap = new ConcurrentHashMap<>();
+
+        for (ReferenceData referenceData : referenceDataList) {
+            referenceDataMap.put(referenceData.getRefkey1() + "|" + referenceData.getRefkey2(), referenceData);
+        }
 
         List<ReportData> reportDataList = inputDataList.parallelStream()
                 .map(inputData -> {
-                    ReferenceData referenceData = referenceDataMap.get(inputData.getRefkey1());
+                    ReferenceData referenceData = referenceDataMap.get(inputData.getRefkey1() + "|" + inputData.getRefkey2());
                     if (referenceData == null) {
                         return null;
                     }
@@ -58,8 +67,6 @@ public class ReportGenerationService {
 
         return reportDataList;
     }
-
-
 
     public List<InputData> findInputRecords() {
         return inputDataRepository.findAll();

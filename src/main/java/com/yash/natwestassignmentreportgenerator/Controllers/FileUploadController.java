@@ -28,7 +28,7 @@ public class FileUploadController {
     }
 
     @GetMapping("/generatereport")
-    public ResponseEntity<List<ReportData>> generateReportFromExistingData(){
+    public ResponseEntity<List<ReportData>> generateReportFromExistingInputAndReferenceTables(){
         try{
             List<ReportData> reportData = fileProcessingService.generateExistingDataReport();
             return ResponseEntity.ok(reportData);
@@ -38,7 +38,7 @@ public class FileUploadController {
     }
 
     @GetMapping("/getreport")
-    public ResponseEntity<List<ReportData>> getExistingDataReport(){
+    public ResponseEntity<List<ReportData>> getReportFromOutputTable(){
         try{
             List<ReportData> reportData = fileProcessingService.getDataReport();
             return ResponseEntity.ok(reportData);

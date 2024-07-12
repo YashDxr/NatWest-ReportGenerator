@@ -5,6 +5,7 @@ import com.yash.natwestassignmentreportgenerator.Models.OutputData;
 import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
 import com.yash.natwestassignmentreportgenerator.Models.ReportData;
 import com.yash.natwestassignmentreportgenerator.Repositories.InputDataRepository;
+import com.yash.natwestassignmentreportgenerator.Repositories.OutputDataRepository;
 import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -38,6 +39,8 @@ public class FileProcessingService {
 
     @Autowired
     ReportGenerationService reportGenerationService;
+    @Autowired
+    private OutputDataRepository outputDataRepository;
 
     @Transactional
     public List<ReportData> saveFile(MultipartFile inputFile, MultipartFile referenceFile) throws Exception {
@@ -124,7 +127,7 @@ public class FileProcessingService {
     }
 
     public List<ReportData> getDataReport() {
-        List<OutputData> outputData = new ArrayList<>();
+        List<OutputData> outputData = outputDataRepository.findAll();
         List<ReportData> reportDataList = new ArrayList<>();
 
         for (OutputData data : outputData) {

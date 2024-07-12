@@ -57,7 +57,6 @@ public class ReportGenerationController {
 
     @PostMapping("/schedule")
     public ResponseEntity<String> scheduleReportGeneration(@RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime datetime) {
-        System.out.println("Entered...");
         try {
             System.out.println(datetime);
             schedulingService.scheduleReportGeneration(datetime);

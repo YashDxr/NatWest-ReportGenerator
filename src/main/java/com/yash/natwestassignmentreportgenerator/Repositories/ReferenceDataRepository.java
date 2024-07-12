@@ -11,8 +11,7 @@ import java.util.Optional;
 @Repository
 public interface ReferenceDataRepository extends JpaRepository<ReferenceData, Long> {
 
-    ReferenceData findByRefkey1(String refkey1);
 
-    List<ReferenceData> findByRefkey1In(List<String> refkeys);
+    List<ReferenceData> findByRefkey1InOrRefkey2In(List<String> refkey1List, List<String> refkey2List);
 }
 
