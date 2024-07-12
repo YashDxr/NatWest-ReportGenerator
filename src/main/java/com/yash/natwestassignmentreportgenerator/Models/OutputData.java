@@ -1,10 +1,7 @@
 package com.yash.natwestassignmentreportgenerator.Models;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,6 +13,7 @@ import java.util.function.Consumer;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "OUTPUTDATA")
 public class OutputData extends Chunk<OutputData> {
 
         @Id
@@ -26,7 +24,7 @@ public class OutputData extends Chunk<OutputData> {
         private String outfield2;
         private String outfield3;
         private String outfield4;
-        private String outfield5;
+        private Double outfield5;
 
         @Override
         public void forEach(Consumer<? super OutputData> action) {

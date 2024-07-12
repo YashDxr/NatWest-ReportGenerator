@@ -3,6 +3,7 @@ package com.yash.natwestassignmentreportgenerator.Services;
 import com.yash.natwestassignmentreportgenerator.Models.InputData;
 import com.yash.natwestassignmentreportgenerator.Models.OutputData;
 import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
+import com.yash.natwestassignmentreportgenerator.Models.ReportData;
 import com.yash.natwestassignmentreportgenerator.Repositories.InputDataRepository;
 import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepository;
 import org.apache.commons.csv.CSVFormat;
@@ -19,6 +20,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -34,17 +36,18 @@ public class FileProcessingService {
     RestTemplate template;
 
     @Transactional
-    public List<OutputData> saveFile(MultipartFile inputFile, MultipartFile referenceFile) throws Exception {
+    public List<ReportData> saveFile(MultipartFile inputFile, MultipartFile referenceFile) throws Exception {
+        System.out.println("Started Fileservice");
         List<InputData> inputDataList = new ArrayList<>();
         List<ReferenceData> referenceDataList = new ArrayList<>();
-        System.out.println(inputFile);
-        System.out.println(referenceFile);
+
 
         try {
             BufferedReader inputReader = new BufferedReader(new InputStreamReader(inputFile.getInputStream(), StandardCharsets.UTF_8));
             BufferedReader referenceReader = new BufferedReader(new InputStreamReader(referenceFile.getInputStream(), StandardCharsets.UTF_8));
             processInputCsvFile(inputReader, inputDataList);
             processReferenceCsvFile(referenceReader, referenceDataList);
+            System.out.println("Completed CSVprocess");
 
         } catch (Exception e) {
             throw new Exception("Failed to process CSV files: " + e.getMessage());
@@ -53,13 +56,18 @@ public class FileProcessingService {
         try {
             inputDataRepository.saveAll(inputDataList);
             referenceDataRepository.saveAll(referenceDataList);
-            List<OutputData> outputDataList = template.getForObject("/api/reports/generate", OutputData.class).getItems();
-            if(outputDataList.size() > 0) {
-                return outputDataList;
+            System.out.println("Going to Reportservice");
+        } catch (DataAccessException e) {
+            throw new Exception("Failed to save data to repositories: " + e.getMessage());
+        }
+        try{
+            List<ReportData> reportDataList = Collections.singletonList(template.getForObject("http://localhost:8081/api/reports/generate", ReportData.class));
+            System.out.println("Report recieved "+ reportDataList);
+            if(!reportDataList.isEmpty()) {
+                return reportDataList;
             }
             return null;
-
-        } catch (DataAccessException e) {
+        } catch (Exception e){
             throw new Exception("Failed to save data to repositories: " + e.getMessage());
         }
     }
@@ -80,7 +88,8 @@ public class FileProcessingService {
                 inputData.setRefkey1(csvRecord.get("refkey1"));
                 inputData.setRefkey2(csvRecord.get("refkey2"));
 
-                dataList.add(inputData);
+                System.out.println("Svaing: "+inputData);
+                inputDataRepository.save(inputData);
 
             } catch (Exception e) {
                 throw new Exception("Failed to parse CSV record: " + e.getMessage());
@@ -101,7 +110,8 @@ public class FileProcessingService {
                 referenceData.setRefdata3(csvRecord.get("refdata3"));
                 referenceData.setRefdata4(Double.valueOf(csvRecord.get("refdata4")));
 
-                dataList.add(referenceData);
+                System.out.println("Saving: "+referenceData);
+                referenceDataRepository.save(referenceData);
 
             } catch (Exception e) {
                 throw new Exception("Failed to parse CSV record: " + e.getMessage());

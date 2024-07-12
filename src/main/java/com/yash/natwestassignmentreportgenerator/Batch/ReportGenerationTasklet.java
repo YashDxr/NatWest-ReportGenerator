@@ -16,7 +16,7 @@ public class ReportGenerationTasklet implements ItemProcessor<InputData, OutputD
         outputData.setOutfield2("Placeholder"); // Example: Set some static value
         outputData.setOutfield3("Placeholder"); // Example: Set some static value
         outputData.setOutfield4(inputData.getField3() + Math.max(inputData.getField5(), 0)); // Example: Adjust transformation logic
-        outputData.setOutfield5(""+Math.max(inputData.getField5(), 0)); // Example: Adjust transformation logic
+        outputData.setOutfield5(Math.max(inputData.getField5(), 0)); // Example: Adjust transformation logic
         return outputData;
     }
 }
