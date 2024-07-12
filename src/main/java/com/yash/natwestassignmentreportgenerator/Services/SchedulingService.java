@@ -3,12 +3,9 @@ package com.yash.natwestassignmentreportgenerator.Services;
 import com.yash.natwestassignmentreportgenerator.Models.ReportData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -27,16 +24,20 @@ public class SchedulingService {
     private TaskScheduler taskScheduler;
 
     private List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
+    private List<ReportData> lastGeneratedReport = new ArrayList<>();
+
 
     public void scheduleReportGeneration(LocalDateTime datetime) {
         Date date = Date.from(datetime.atZone(ZoneId.systemDefault()).toInstant());
         ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(() -> {
-            List<ReportData> reportDataList = reportGenerationService.generateReport();
-            reportDataList.forEach(report -> {
-                System.out.println(report.toString());
-            });
+            lastGeneratedReport = reportGenerationService.generateReport();
+            lastGeneratedReport.forEach(report -> System.out.println(report.toString()));
         }, date);
 
         scheduledFutures.add(scheduledFuture);
+    }
+
+    public List<ReportData> getLastGeneratedReport() {
+        return lastGeneratedReport;
     }
 }

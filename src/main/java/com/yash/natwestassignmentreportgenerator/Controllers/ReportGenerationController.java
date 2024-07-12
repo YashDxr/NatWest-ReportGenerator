@@ -9,6 +9,7 @@ import com.yash.natwestassignmentreportgenerator.Services.SchedulingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -67,11 +68,11 @@ public class ReportGenerationController {
         }
     }
 
-    @GetMapping("/scheduled-tasks")
-    public ResponseEntity<String> getScheduledTasks() throws ExecutionException, InterruptedException {
-        // Logic to retrieve scheduled tasks or their details
-//        String task = reportGenerationService.getTasks();
-        return ResponseEntity.ok("");//task);
+    @GetMapping("/report")
+    public String getReport(Model model) {
+        List<ReportData> reportDataList = schedulingService.getLastGeneratedReport();
+        model.addAttribute("reportDataList", reportDataList);
+        return "report";
     }
 
 }
