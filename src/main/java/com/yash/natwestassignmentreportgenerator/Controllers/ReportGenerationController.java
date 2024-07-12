@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @RestController
 @RequestMapping("/api/reports")
@@ -66,13 +65,6 @@ public class ReportGenerationController {
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Failed to schedule report generation: " + e.getMessage());
         }
-    }
-
-    @GetMapping("/report")
-    public String getReport(Model model) {
-        List<ReportData> reportDataList = schedulingService.getLastGeneratedReport();
-        model.addAttribute("reportDataList", reportDataList);
-        return "report";
     }
 
 }
