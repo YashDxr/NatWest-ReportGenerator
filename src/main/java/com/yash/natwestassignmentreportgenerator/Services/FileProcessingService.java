@@ -5,15 +5,16 @@ import com.yash.natwestassignmentreportgenerator.Models.OutputData;
 import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
 import com.yash.natwestassignmentreportgenerator.Models.ReportData;
 import com.yash.natwestassignmentreportgenerator.Repositories.InputDataRepository;
+import com.yash.natwestassignmentreportgenerator.Repositories.OutputDataRepository;
 import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepository;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.BufferedReader;
@@ -33,11 +34,16 @@ public class FileProcessingService {
     private ReferenceDataRepository referenceDataRepository;
 
     @Autowired
-    RestTemplate template;
+    private OutputDataRepository outputDataRepository;
+
+    @Autowired
+    ModelMapper mapper;
+
+    @Autowired
+    ReportGenerationService reportGenerationService;
 
     @Transactional
     public List<ReportData> saveFile(MultipartFile inputFile, MultipartFile referenceFile) throws Exception {
-        System.out.println("Started Fileservice");
         List<InputData> inputDataList = new ArrayList<>();
         List<ReferenceData> referenceDataList = new ArrayList<>();
 
@@ -47,7 +53,6 @@ public class FileProcessingService {
             BufferedReader referenceReader = new BufferedReader(new InputStreamReader(referenceFile.getInputStream(), StandardCharsets.UTF_8));
             processInputCsvFile(inputReader, inputDataList);
             processReferenceCsvFile(referenceReader, referenceDataList);
-            System.out.println("Completed CSVprocess");
 
         } catch (Exception e) {
             throw new Exception("Failed to process CSV files: " + e.getMessage());
@@ -56,13 +61,12 @@ public class FileProcessingService {
         try {
             inputDataRepository.saveAll(inputDataList);
             referenceDataRepository.saveAll(referenceDataList);
-            System.out.println("Going to Reportservice");
         } catch (DataAccessException e) {
             throw new Exception("Failed to save data to repositories: " + e.getMessage());
         }
         try{
-            List<ReportData> reportDataList = Collections.singletonList(template.getForObject("http://localhost:8081/api/reports/generate", ReportData.class));
-            System.out.println("Report recieved "+ reportDataList);
+            List<ReportData> reportDataList = reportGenerationService.generateReport();
+
             if(!reportDataList.isEmpty()) {
                 return reportDataList;
             }
@@ -88,8 +92,7 @@ public class FileProcessingService {
                 inputData.setRefkey1(csvRecord.get("refkey1"));
                 inputData.setRefkey2(csvRecord.get("refkey2"));
 
-                System.out.println("Svaing: "+inputData);
-                inputDataRepository.save(inputData);
+                dataList.add(inputData);
 
             } catch (Exception e) {
                 throw new Exception("Failed to parse CSV record: " + e.getMessage());
@@ -110,12 +113,27 @@ public class FileProcessingService {
                 referenceData.setRefdata3(csvRecord.get("refdata3"));
                 referenceData.setRefdata4(Double.valueOf(csvRecord.get("refdata4")));
 
-                System.out.println("Saving: "+referenceData);
-                referenceDataRepository.save(referenceData);
+                dataList.add(referenceData);
 
             } catch (Exception e) {
                 throw new Exception("Failed to parse CSV record: " + e.getMessage());
             }
         }
+    }
+
+    public List<ReportData> generateExistingDataReport() {
+        List<ReportData> reportDataList = reportGenerationService.generateReport();
+        return reportDataList;
+    }
+
+    public List<ReportData> getDataReport() {
+        List<OutputData> outputData = new ArrayList<>();
+        List<ReportData> reportDataList = new ArrayList<>();
+
+        for (OutputData data : outputData) {
+            ReportData reportData = mapper.map(data, ReportData.class);
+            reportDataList.add(reportData);
+        }
+        return reportDataList;
     }
 }

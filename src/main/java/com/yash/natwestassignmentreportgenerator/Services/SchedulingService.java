@@ -1,15 +1,42 @@
 package com.yash.natwestassignmentreportgenerator.Services;
 
-
-import org.springframework.scheduling.annotation.Scheduled;
+import com.yash.natwestassignmentreportgenerator.Models.ReportData;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 
 @Service
 public class SchedulingService {
 
-    @Scheduled(cron = "0 0 * * * ?") // Example: runs every hour
-    public void scheduledReportGeneration() {
-        // Implement scheduled report generation logic here
+    @Autowired
+    private ReportGenerationService reportGenerationService;
+
+    @Autowired
+    @Qualifier("customTaskScheduler")
+    private TaskScheduler taskScheduler;
+
+    private List<ScheduledFuture<?>> scheduledFutures = new ArrayList<>();
+
+    public void scheduleReportGeneration(LocalDateTime datetime) {
+        Date date = Date.from(datetime.atZone(ZoneId.systemDefault()).toInstant());
+        ScheduledFuture<?> scheduledFuture = taskScheduler.schedule(() -> {
+            List<ReportData> reportDataList = reportGenerationService.generateReport();
+            reportDataList.forEach(report -> {
+                System.out.println(report.toString());
+            });
+        }, date);
+
+        scheduledFutures.add(scheduledFuture);
     }
 }
-

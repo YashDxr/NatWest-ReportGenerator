@@ -50,5 +50,11 @@
 
     <button type="submit">Generate Report</button>
 </form>
+
+<form action="/api/reports/schedule" method="post">
+    <input type="datetime-local" name="datetime"><br><br>
+    <button type="submit">Generate Report</button>
+</form>
+
 </body>
 </html>
