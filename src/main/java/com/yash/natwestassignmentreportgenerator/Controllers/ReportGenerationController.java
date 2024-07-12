@@ -2,8 +2,10 @@ package com.yash.natwestassignmentreportgenerator.Controllers;
 
 
 import com.yash.natwestassignmentreportgenerator.Models.InputData;
+import com.yash.natwestassignmentreportgenerator.Models.ReferenceData;
 import com.yash.natwestassignmentreportgenerator.Models.ReportData;
 import com.yash.natwestassignmentreportgenerator.Repositories.InputDataRepository;
+import com.yash.natwestassignmentreportgenerator.Repositories.ReferenceDataRepository;
 import com.yash.natwestassignmentreportgenerator.Services.ReportGenerationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,19 +21,30 @@ public class ReportGenerationController {
     @Autowired
     private ReportGenerationService reportGenerationService;
 
-    @Autowired
-    private InputDataRepository repo;
 
-    @GetMapping("/rep")
-    @ResponseBody
-    public List<InputData> getReps(){
-        return repo.findAll();
+    @GetMapping("/inputdata")
+    public ResponseEntity<List<InputData>> getInputRecords(){
+        try{
+            List<InputData> records = reportGenerationService.findInputRecords();
+            return ResponseEntity.ok(records);
+        }catch (Exception e){
+            return ResponseEntity.noContent().build();
+        }
+    }
+
+    @GetMapping("/referencedata")
+    public ResponseEntity<List<ReferenceData>> getReferenceRecords(){
+        try{
+            List<ReferenceData> records = reportGenerationService.findReferenceRecords();
+            return ResponseEntity.ok(records);
+        }catch (Exception e){
+            return ResponseEntity.noContent().build();
+        }
     }
 
     @GetMapping("/generate")
     public ResponseEntity<List<ReportData>> generateReport() {
         try {
-            System.out.println("Came to Reportcontroller");
             return ResponseEntity.ok(reportGenerationService.generateReport());
         } catch (Exception e) {
             return ResponseEntity.status(500).body(null);

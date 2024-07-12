@@ -40,30 +40,12 @@ public class ReportGenerationService {
     private ReportGenerationTasklet reportGenerationTasklet;
 
     public List<ReportData> generateReport() {
-        System.out.println("Started Reportservice");
         List<InputData> inputDataList = inputDataRepository.findAll();
-        System.out.println("Got inputDataList: " + inputDataList);
-//        List<ReferenceData> referenceDataList = referenceDataRepository.findAll();
-//        List<OutputData> outputDataList = new ArrayList<>();
         List<ReportData> reportDataList = new ArrayList<>();
 
-//        for (InputData inputData : inputDataList) {
-//            Optional<ReferenceData> referenceDataOptional = referenceDataRepository.findByRefkey1AndRefkey2(inputData.getRefkey1(), inputData.getRefkey2());
-//            if (referenceDataOptional.isPresent()) {
-//                ReferenceData referenceData = referenceDataOptional.get();
-//                OutputData outputData = new OutputData();
-//                outputData.setOutfield1(inputData.getField1() + inputData.getField2());
-//                outputData.setOutfield2(referenceData.getRefdata1());
-//                outputData.setOutfield3(referenceData.getRefdata2() + referenceData.getRefdata3());
-//                outputData.setOutfield4(inputData.getField3() + Math.max(inputData.getField5(), referenceData.getRefdata4()));
-//                outputData.setOutfield5(Math.max(inputData.getField5(), referenceData.getRefdata4()));
-//                outputDataList.add(outputData);
-//            }
-//        }
-
         for(InputData inputData : inputDataList) {
-            ReferenceData referenceData = referenceDataRepository.findByrefkey1(inputData.getRefkey1());
-            System.out.println("Got referenceData: " + referenceData);
+            ReferenceData referenceData = referenceDataRepository.findByRefkey1(inputData.getRefkey1());
+            if(referenceData == null) {return new ArrayList<>();}
             ReportData report = new ReportData();
 
             report.setOutfield1(inputData.getField1()+inputData.getField2());
@@ -74,8 +56,7 @@ public class ReportGenerationService {
 
             reportDataList.add(report);
         }
-        System.out.println("Going back to Fileservice");
-//        outputDataRepository.saveAll(outputDataList);
+
         return reportDataList;
     }
 
@@ -86,6 +67,14 @@ public class ReportGenerationService {
 
         ((ThreadPoolTaskScheduler) taskScheduler).initialize();
         scheduledTask = taskScheduler.schedule(this::generateReport, Instant.parse(cronExpression));
+    }
+
+    public List<InputData> findInputRecords() {
+        return inputDataRepository.findAll();
+    }
+
+    public List<ReferenceData> findReferenceRecords() {
+        return referenceDataRepository.findAll();
     }
 }
 
