@@ -10,8 +10,6 @@ import java.util.Optional;
 @Repository
 public interface ReferenceDataRepository extends JpaRepository<ReferenceData, Long> {
 
-    Optional<ReferenceData> findByRefkey1AndRefkey2(String refkey1, String refkey2);
-
     ReferenceData findByRefkey1(String refkey1);
 }
 
