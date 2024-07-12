@@ -12,7 +12,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,9 +29,21 @@ public class FileUploadControllerTests {
 
 
     @Test
-    public void testGetReportFromOutputTable() throws Exception {
+    public void testGetReportFromOutputTable(){
         when(outputDataRepository.findAll()).thenReturn(Stream.of(new OutputData("Test", "Test", "Test", "Test", 0.5), new OutputData("Test", "Test", "Test", "Test", 0.5)).toList());
         List<ReportData> list = fileService.getDataReport();
+        assertEquals(String.class, list.get(0).getOutfield1().getClass());
+        assertEquals(String.class, list.get(0).getOutfield2().getClass());
+        assertEquals(String.class, list.get(0).getOutfield3().getClass());
+        assertEquals(String.class, list.get(0).getOutfield4().getClass());
+        assertEquals(Double.class, list.get(0).getOutfield5().getClass());
+    }
+
+    @Test
+    public void testGenerateReportFromExistingInputAndReferenceTables(){
+        when(outputDataRepository.findAll()).thenReturn(Stream.of(new OutputData("Test", "Test", "Test", "Test", 0.5), new OutputData("Test", "Test", "Test", "Test", 0.5)).toList());
+
+        List<ReportData> list = fileService.generateExistingDataReport();
         assertEquals(String.class, list.get(0).getOutfield1().getClass());
         assertEquals(String.class, list.get(0).getOutfield2().getClass());
         assertEquals(String.class, list.get(0).getOutfield3().getClass());

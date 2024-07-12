@@ -24,5 +24,16 @@ public class ReferenceData {
     private String refdata2;
     private String refdata3;
     private Double refdata4;
+
+    public ReferenceData(String test, String test1, String test2, String test3, double v) {
+        this.refkey1 = test;
+        this.refkey2 = test1;
+        this.refdata1 = test2;
+        this.refdata2 = test3;
+        this.refdata3 = test3;
+        this.refdata4 = v;
+    }
+
+
 }
 
